@@ -30,6 +30,7 @@ if [ $# -gt 0 ]; then
         $EXEC ${PROJECT_NAME}-node /bin/bash -c "quasar create ."
         $EXEC ${PROJECT_NAME}-node /bin/bash -c ". ~/conf_fix.sh"
         $COMPOSE restart node
+        $COMPOSE restart app
         
     elif [ "$1" == "php" ]; then
         shift 1
