@@ -1,0 +1,61 @@
+version: '2'
+services:
+
+  app:
+    image: ubuntu-latest
+    container_name: ${PROJECT_NAME}-app
+    environment:
+      - XDEBUG_REMOTE_HOST
+      - XDEBUG_REMOTE_ENABLE
+      - XDEBUG_IDE_KEY
+      - LARAVEL_FOLDER
+      - PROJECT_FOLDER
+    build:
+      dockerfile: ${PROJECT_FOLDER}/docker/app/Dockerfile
+      context: .
+    volumes:
+    - ${PROJECT_FOLDER}/${LARAVEL_FOLDER}:/var/www/html/${LARAVEL_FOLDER}
+    ports:
+      - "${WEB_PORT}:80"
+      - "${SSL_PORT}:443"
+    networks:
+        - backend
+  
+  node:
+    container_name: ${PROJECT_NAME}-node
+    user: "node"
+    working_dir: /app
+    build:
+      dockerfile: ${PROJECT_FOLDER}/docker/node/Dockerfile
+      context: .
+    environment:
+      - NODE_ENV=development
+      - QUASAR_PORT
+      - QUASAR_FOLDER
+      - PROJECT_FOLDER
+    volumes:
+      - ${PROJECT_FOLDER}/${QUASAR_FOLDER}:/app
+    restart: unless-stopped
+    ports:
+      - "${QUASAR_PORT}:${QUASAR_PORT}"
+    command: sh -c "(ls package.json && quasar dev) || tail -f /dev/null"
+    networks:
+      - backend
+
+  mysql:
+    image: mysql:8.0
+    container_name: ${PROJECT_NAME}-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+    ports:
+    - "${MYSQL_PORT}:3306"
+    volumes:
+    - ${PROJECT_FOLDER}/docker/mysql/data:/var/lib/mysql
+    networks:
+        - backend
+
+networks:
+  backend:
+    driver: bridge

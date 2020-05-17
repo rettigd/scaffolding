@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+# Bail out on first error
+set -e
+
+export PROJECT_FOLDER=${PROJECT_FOLDER:-./}
+
+COMPOSE="docker-compose -f docker-compose.yaml"
+EXEC="docker exec -it"
+
+if [ $# -gt 0 ]; then
+
+    # .env can over-ride env var such as APP_PORT, and MYSQL_PORT
+    if [ -f .env ]; then
+        source .env
+    fi
+
+    if [ "$1" == "art" ] || [ "$1" == "artisan" ]; then
+        shift 1
+        $EXEC \
+            ${PROJECT_NAME}-app \
+            /bin/bash -c \
+            "php artisan `echo $@`"
+
+    elif [ "$1" == "create" ]; then
+        mkdir ${LARAVEL_FOLDER}
+        mkdir ${QUASAR_FOLDER}
+        $COMPOSE up -d --build
+        $EXEC ${PROJECT_NAME}-app /bin/bash -c "cd ${LARAVEL_FOLDER} && composer create-project --prefer-dist laravel/laravel ."
+        $EXEC ${PROJECT_NAME}-node /bin/bash -c "quasar create ."
+        $EXEC ${PROJECT_NAME}-node /bin/bash -c ". ~/conf_fix.sh"
+        $COMPOSE restart node
+        
+    elif [ "$1" == "php" ]; then
+        shift 1
+        $EXEC \
+            ${PROJECT_NAME}-app \
+            /bin/bash -c \
+            "php `echo $@`"
+
+    elif [ "$1" == "app" ]; then
+        shift 1
+        $EXEC ${PROJECT_NAME}-app /bin/bash
+
+    elif [ "$1" == "composer" ]; then
+        shift 1
+        $COMPOSE run --rm \
+            -w /var/www/html \
+            app \
+            composer "$@"
+
+    elif [ "$1" == "node" ]; then
+        $EXEC ${PROJECT_NAME}-node /bin/bash
+
+    elif [ "$1" == "start" ] || [ "$1" == "up" ]; then
+        shift 1
+        $COMPOSE up -d "$@"
+
+    elif [ "$1" == "rebuild" ] || [ "$1" == "build" ]; then
+        shift 1
+        $COMPOSE down "$@"
+        $COMPOSE up --build -d "$@"
+
+    elif [ "$1" == "restart" ]; then
+        shift 1
+        $COMPOSE down "$@"
+        $COMPOSE up -d "$@"
+
+    elif [ "$1" == "stop" ] || [ "$1" == "down" ]; then
+        shift 1
+        $COMPOSE down "$@"
+
+    else
+        $COMPOSE "$@"
+    fi
+
+
+else
+    $COMPOSE ps
+fi

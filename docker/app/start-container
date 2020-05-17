@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -e
+
+role=${CONTAINER_ROLE:-app}
+
+if [ "production" == "$APP_ENV" ] || [ "composer" == "$APP_ENV" ]; then
+    if [ -e $PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini ]; then
+        rm -f $PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini
+    fi
+fi
+
+if [ "production" != "$APP_ENV" ]; then
+    rm $PHP_INI_DIR/php.ini
+    cp $PHP_INI_DIR/php.ini-development $PHP_INI_DIR/php.ini
+fi
+
+touch /root/.composer/auth.json
+echo "{" >> /root/.composer/auth.json
+
+if [ ! -z "$GITHUB_TOKEN" ]; then
+    echo "\"github-oauth\": {\"github.com\": \"$GITHUB_TOKEN\"}" >> /root/.composer/auth.json
+fi
+
+echo "}" >> /root/.composer/auth.json
+
+if [ "$role" == "app" ]; then
+
+    exec "$@"
+
+elif [ "$role" == "scheduler" ]; then
+
+    while [ true ]
+    do
+      php /var/www/html/api/artisan schedule:run --verbose --no-interaction &
+      sleep 60
+    done
+
+else
+    echo "Could not match the container role \"$role\""
+    exit 1
+fi
