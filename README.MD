@@ -7,6 +7,6 @@ Create apps
 (Optional) Review, then move the Quasar .vscode folder to your root
 
 Test it
-http://localhost:{QUASAR_PORT}
-http://localhost:{LARAVEL_PORT}
+ - `http://localhost:{QUASAR_PORT}`
+ - `http://localhost:{LARAVEL_PORT}`
 
