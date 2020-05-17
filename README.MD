@@ -1,4 +1,4 @@
-Verify .env
+Verify and copy .env.example to .env
 - Make sure ports and project name don't conflict in your local dev environment
 
 Create apps
