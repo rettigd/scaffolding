@@ -9,4 +9,3 @@ Create apps
 Test it
  - `http://localhost:{QUASAR_PORT}`
  - `http://localhost:{LARAVEL_PORT}`
-
