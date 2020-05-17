@@ -1,4 +1,4 @@
-FROM php:7.2-apache-stretch
+FROM php:7.4-apache
 
 WORKDIR /var/www/html
 
@@ -12,15 +12,16 @@ RUN apt-get update && apt-get install -y \
         libpng-dev \
         zlib1g-dev libicu-dev g++ \
         libxss1 libappindicator1 libindicator7 wget \
+        libzip-dev \
         fonts-liberation libappindicator3-1 libasound2 libatk-bridge2.0-0  libgtk-3-0 libnspr4 libnss3 libx11-xcb1 libxtst6 xdg-utils \ 
     && docker-php-ext-install -j$(nproc) pdo_mysql \
     && docker-php-ext-install -j$(nproc) mysqli \
     && docker-php-ext-install -j$(nproc) bcmath \
     && docker-php-ext-install -j$(nproc) intl \
     && docker-php-ext-install -j$(nproc) zip \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd \
-    && pecl install xdebug-2.6.1 \
+    && pecl install xdebug-2.9.5 \
     && docker-php-ext-enable xdebug \
     && php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer \
     && apt-get clean \

@@ -20,7 +20,7 @@ if [ $# -gt 0 ]; then
         $EXEC \
             ${PROJECT_NAME}-app \
             /bin/bash -c \
-            "php artisan `echo $@`"
+            "cd ${LARAVEL_FOLDER} && php artisan `echo $@`"
 
     elif [ "$1" == "create" ]; then
         mkdir ${LARAVEL_FOLDER}
@@ -32,6 +32,20 @@ if [ $# -gt 0 ]; then
         $COMPOSE restart node
         $COMPOSE restart app
         
+    elif [ "$1" == "php" ]; then
+        shift 1
+        $EXEC \
+            ${PROJECT_NAME}-app \
+            /bin/bash -c \
+            "php `echo $@`"
+
+    elif [ "$1" == "test" ]; then
+        shift 1
+        $EXEC \
+            ${PROJECT_NAME}-app \
+            /bin/bash -c \
+            "cd ${LARAVEL_FOLDER} && ./vendor/bin/phpunit `echo $@`"
+
     elif [ "$1" == "php" ]; then
         shift 1
         $EXEC \
