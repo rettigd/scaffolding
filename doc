@@ -60,7 +60,7 @@ if [ $# -gt 0 ]; then
     elif [ "$1" == "composer" ]; then
         shift 1
         $COMPOSE run --rm \
-            -w /var/www/html \
+            -w /var/www/html/${LARAVEL_FOLDER} \
             app \
             composer "$@"
 
