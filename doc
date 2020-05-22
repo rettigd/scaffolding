@@ -3,24 +3,24 @@
 # Bail out on first error
 set -e
 
+if [ -f .env ]; then
+    source .env
+fi
+
 export PROJECT_FOLDER=${PROJECT_FOLDER:-./}
 
 COMPOSE="docker-compose -f docker-compose.yaml"
-EXEC="docker exec -it"
+EXEC="docker exec -it -w /var/www/html/${LARAVEL_FOLDER}"
 
 if [ $# -gt 0 ]; then
 
     # .env can over-ride env var such as APP_PORT, and MYSQL_PORT
-    if [ -f .env ]; then
-        source .env
-    fi
-
     if [ "$1" == "art" ] || [ "$1" == "artisan" ]; then
         shift 1
         $EXEC \
             ${PROJECT_NAME}-app \
             /bin/bash -c \
-            "cd ${LARAVEL_FOLDER} && php artisan `echo $@`"
+            "php artisan `echo $@`"
 
     elif [ "$1" == "create" ]; then
         mkdir ${LARAVEL_FOLDER}
@@ -44,7 +44,7 @@ if [ $# -gt 0 ]; then
         $EXEC \
             ${PROJECT_NAME}-app \
             /bin/bash -c \
-            "cd ${LARAVEL_FOLDER} && ./vendor/bin/phpunit `echo $@`"
+            "./vendor/bin/phpunit `echo $@`"
 
     elif [ "$1" == "php" ]; then
         shift 1
